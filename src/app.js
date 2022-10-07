@@ -18,9 +18,11 @@ app.use(cors({
 //Rotas
 const auth = require('./routes/auth');
 const index = require('./routes/index');
+const posts = require('./routes/post');
 // const personRoute = require('./routes/personRoute');
 app.use('/', index);
 app.use('/auth', auth);
+app.use('/posts', posts);
 // app.use('/persons', personRoute);
 
 module.exports = app;

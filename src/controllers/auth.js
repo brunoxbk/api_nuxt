@@ -6,10 +6,10 @@ require("dotenv")
 const Pool = require('pg').Pool
 const pool = new Pool({
   user: process.env.PG_USER,
-  host: 'localhost',
+  host: process.env.PG_HOST,
   database: process.env.PG_DB ,
   password: process.env.PG_PASS,
-  port: 5432,
+  port: process.env.PG_PORT,
 })
 
 
@@ -22,7 +22,7 @@ exports.sign_up = (req, res, next) => {
         if (error) {
         throw error
         }
-        res.status(201).send(`User added with ID: ${results.insertId}`)
+        res.status(201).send({message:`User added`})
     })
 
 };
@@ -31,8 +31,6 @@ exports.sign_up = (req, res, next) => {
 exports.login = (req, res, next) => {
     const { email, password } = req.body
 
-    console.log(email, password)
-    
     pool.query('SELECT * FROM users WHERE email = $1', [email], (error, results) => {
         if (error) {
             res.status(500)
@@ -49,10 +47,11 @@ exports.login = (req, res, next) => {
               });
         }
 
+
         //comparing passwords
         let passwordIsValid = bcrypt.compareSync(
             password,
-            results.password
+            results.rows[0].password
         );
 
         // checking if password was valid and send response accordingly
@@ -65,7 +64,7 @@ exports.login = (req, res, next) => {
         }
 
         let token = jwt.sign({
-            id: results.id
+            id: results.rows[0].id
           }, process.env.API_SECRET, {
             expiresIn: 86400
           });
@@ -74,9 +73,9 @@ exports.login = (req, res, next) => {
         res.status(200)
           .send({
             user: {
-              id: results.id,
-              email: results.email,
-              name: results.name,
+              id: results.rows[0].id,
+              email: results.rows[0].email,
+              name: results.rows[0].name,
             },
             message: "Login successfull",
             accessToken: token,
@@ -84,3 +83,20 @@ exports.login = (req, res, next) => {
       })
 };
 
+
+exports.get_user = (req, res, next) => {
+    
+  
+  pool.query('SELECT * FROM users WHERE id = $1', [req.user.id],  (error, results) => {
+      if (error) {
+      throw error
+      }
+      res.status(200).send({
+        user: {
+        id: results.rows[0].id,
+        email: results.rows[0].email,
+        name: results.rows[0].name,
+      }})
+  })
+
+};
