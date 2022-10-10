@@ -40,7 +40,7 @@ exports.login = (req, res, next) => {
             return;
         }
 
-        if (!results) {
+        if (results.rowCount < 1) {
             return res.status(404)
               .send({
                 message: "User Not found."

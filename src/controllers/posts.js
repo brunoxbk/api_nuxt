@@ -15,14 +15,14 @@ const pool = new Pool({
 exports.fetch = (req, res, next) => {
     
   
-    pool.query('SELECT * FROM posts', (error, results) => {
+    pool.query('SELECT posts.id, posts.text, posts.user_id, posts.created, users.name as user_name  FROM posts INNER JOIN users ON users.id=posts.user_id;', (error, results) => {
         if (error) {
         throw error
         }
 
 
         res.status(200).send(results.rows.map(i=>{
-            return {id: i.id, text: i.text}
+            return {id: i.id, text: i.text,created: i.created, user_name: i.user_name}
         }))
     })
   
